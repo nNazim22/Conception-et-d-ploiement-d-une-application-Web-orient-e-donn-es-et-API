@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 2 # On demande 2 copies de ton site pour gérer plus de trafic !
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: catalogue-frontend:Node01
+        imagePullPolicy: IfNotPresent # On dit à K8s d'utiliser l'image compilée sur ta machine
+        ports:
+        - containerPort: 80

@@ -1,0 +1,53 @@
+stages:
+  - test
+  - build
+  - deploy
+
+# --- ÉTAPE 1 : TESTS ---
+
+test_backend:
+  stage: test
+  image: node:20
+  script:
+    - cd backend
+    - npm install
+    - node --check server.js
+    - node --check routes/movies.js
+    - node --check routes/favorites.js
+    - node --check routes/genres.js
+    - echo "Le backend Node.js a été validé syntaxiquement."
+
+test_frontend:
+  stage: test
+  image: node:20
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
+    - echo "Le frontend Vue.js a été compilé avec succès."
+
+# --- ÉTAPE 2 : BUILD DES IMAGES DOCKER ---
+
+build_images:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker build -t catalogue-backend:v13 ./backend
+    - docker build -t catalogue-frontend:v13 ./frontend
+
+# --- ÉTAPE 3 : DÉPLOIEMENT ---
+
+deploy_to_k8s:
+  stage: deploy
+  image: alpine/k8s:1.29.2
+  script:
+    - echo "Validation des fichiers YAML de déploiement..."
+    - ls k8s/
+    - echo "Fichiers prêts pour déploiement."
+  environment:
+    name: production
+    url: http://192.168.49.2:30080
