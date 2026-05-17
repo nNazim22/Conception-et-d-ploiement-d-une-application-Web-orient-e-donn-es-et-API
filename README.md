@@ -26,18 +26,23 @@ L'application est découpée en 4 composants majeurs interagissant de manière i
    * Utilise Nginx comme serveur web et **reverse proxy** pour rediriger les requêtes `/api/` vers le backend, évitant ainsi les problèmes de CORS.
    * Exposition externe via un service **NodePort** (30080).
 
-2. **Backend (FastAPI / Python)**
-   * API REST asynchrone gérant la logique métier, la communication avec TMDB et les requêtes internes.
+2. **Backend (Node.js 20 + Express)**
+   * API REST organisée en routeurs séparés (`/movies`, `/favorites`, `/genres`).
    * Déployé avec **2 réplicas**.
    * Sécurisé au sein du cluster via un service **ClusterIP** (inaccessible directement depuis l'extérieur).
+   * Utilise **Mongoose** (ODM) pour interagir avec MongoDB et **axios** pour les appels TMDB.
+   * Modèle d'exécution **non-bloquant et asynchrone**, adapté à l'orchestration de nombreux appels réseau (TMDB, MongoDB, Redis).
 
-3. **Base de Données (PostgreSQL 15)**
-   * Stockage relationnel garantissant la persistance des films favoris des utilisateurs.
+3. **Base de Données (MongoDB 7)**
+   * Base **documentaire NoSQL** stockant les films favoris dans la collection `favorites`.
+   * Choix justifié par la nature JSON des données TMDB et la souplesse des schémas documentaires.
    * Déployé avec **1 réplica** et couplé à un **PersistentVolumeClaim (PVC)** pour éviter la perte de données lors du redémarrage des pods.
+   * Authentification activée (`admin/secret`, base d'auth `admin`).
 
 4. **Cache (Redis Alpine)**
    * Système de cache en mémoire (stratégie cache-aside) stockant temporairement les données TMDB (ex: genres avec un TTL de 24h).
    * Permet de réduire drastiquement la latence et d'économiser les quotas de l'API externe.
+   * Tolérance aux pannes : si Redis est indisponible, le backend continue de fonctionner en interrogeant TMDB directement.
 
 ---
 
@@ -56,3 +61,4 @@ Le déploiement a été entièrement automatisé pour fonctionner dans un enviro
    ```bash
    chmod +x start.sh
    ./start.sh
+   ```
