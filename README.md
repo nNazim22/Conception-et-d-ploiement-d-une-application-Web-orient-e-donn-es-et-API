@@ -2,7 +2,8 @@
 
 **Module :** Cloud et réseaux virtuels (2025-2026)  
 **Formation :** Master 1 Informatique - Parcours RES (Sorbonne Université)  
-**Équipe :** * ABOULHANA Soufian
+**Équipe :** 
+* ABOULHANA Soufian
 * HOUMEL Nazim
 * BENDOUHA Abderrazzak
 
